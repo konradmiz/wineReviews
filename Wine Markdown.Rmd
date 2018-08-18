@@ -2,12 +2,13 @@
 title: "Wine Word Clouds"
 author: "Konrad Miziolek"
 date: "August 18, 2018"
-output: html_document
+
 output: github_document
+  
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include=FALSE, echo = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
 
@@ -95,10 +96,9 @@ unnested_tokens <- variety_descriptions %>%
   group_by(variety, word) %>%
   count()
 
-nrow(unnested_tokens)
 ```
 
-This provides a very long dataframe: `r scales::comma(nrow(unnested_tokens))` rows and `r ncol(unnested_tokens)` rows.
+This provides a very long dataframe: `r scales::comma(nrow(unnested_tokens))` rows and `r ncol(unnested_tokens)` columns.
 
 I then remove common English words ('the', 'and', 'but') from the reviews. These words are known as stop words and don't really contribute anything to the differences in description between the wines. Additionally, it's common in reviews to cite the name of what is being reviewed; I want to remove the most common words that could be thought of as wine-specific stop words: the names of the wines, and two throw-in words common in most of the reviews. I also remove numeric values: years, prices, ordinal numbers. 
 
@@ -114,9 +114,10 @@ without_stop_words <- unnested_tokens %>%
   ungroup() %>%
   mutate(variety = as.character(variety))
 
+head(without_stop_words)
 ```
 
-Sometimes the same word is repeated with a slighly different ending (e.g. strawberry vs strawberries). The process of removing those is called de-stemming. De-stemming a word can oftentimes return a non-word string back; I do want to keep the full words. To do so, I create a new variable for the word stem and count the number of observations of that word stem by variety. I then keep the original word with the highest count that has that word stem. Thus "strawberry" and "strawberries" are counted as the same word and I can include their sum frequency of occurence in just the word "strawberry."   
+Sometimes the same word is repeated with a slighly different ending (e.g. abound vs abounds, or strawberry vs strawberries). The process of removing those is called de-stemming. De-stemming a word can oftentimes return a non-word string back; I do want to keep the full words. To do so, I create a new variable for the word stem and count the number of observations of that word stem by variety. I then keep the original word with the highest count that has that word stem. Thus "strawberry" and "strawberries" are counted as the same word and I can include their sum frequency of occurence in just the word "strawberry."   
 
 ```{r}
 stemmed_words <- without_stop_words %>%
@@ -145,12 +146,13 @@ ggplot(wine_subset, aes(x = reorder(word, N), y = N)) +
   coord_flip() + 
   labs(x = "Word")
 ```
+
 ## Wordcloud
 
 Some words are very common between varieties (fruit, cherry, tannins) and so would be boring to see on a wordcloud for each wine. Meanwhile some words don't show up frequently outside of that variety (Chardonnay and pineapple, Sauvignon Blanc and grapefruit, Syrah and pepper, etc). These words are better at distinguishing different wine varieties than common shared words, so it would be nice to distinguish them better. One way of quantifying this is through TF-IDF (text-frequency/inter-document frequency). Words that are common in each corpus (here defined as a variety) are weighted low, while words that are frequent in one corpus but not in others are weighted higher. For each variety, the 75 words with the highest TF-IDF score are chosen.
 
 ```{r}
-wine_tf_idf <- stem_word_counts %>%
+wine_tf_idf <- stemmed_words %>%
   bind_tf_idf(word, variety, N) %>%
   group_by(variety) %>%
   top_n(75, tf_idf) %>%
@@ -183,10 +185,10 @@ wine_plot_data <- wine_tf_idf %>%
 
 By specifying the segment size is 0 and the point padding is NA, I get non-overlapping text (as much as is possible in the number of iterations). 
 
-```{r}
+```{r out.width = "80%"}
 ggplot(wine_plot_data, aes(x, y, label = word)) + 
   theme_bw() + 
-  geom_text_repel(aes(size = size, alpha = size), segment.size = 0, # angle = angle
+  geom_text_repel(aes(size = size, alpha = size), segment.alpha = 0, # angle = angle
                   force = 10, max.iter = 25000, point.padding = NA) + 
   facet_wrap(~variety, scales = "free") + 
   theme(axis.text = element_blank(),
@@ -194,7 +196,6 @@ ggplot(wine_plot_data, aes(x, y, label = word)) +
         axis.ticks = element_blank(),
         axis.title = element_blank()) +
   guides(size = FALSE) + 
-  guides(alpha = FALSE) #+ 
-  #ggsave("Top Wine Wordclouds TF-IDF.png", width = 12, height = 8, units = "in")
+  guides(alpha = FALSE)
 ```
 
