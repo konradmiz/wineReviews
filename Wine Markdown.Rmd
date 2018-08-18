@@ -3,6 +3,7 @@ title: "Wine Word Clouds"
 author: "Konrad Miziolek"
 date: "August 18, 2018"
 output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
