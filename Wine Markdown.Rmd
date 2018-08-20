@@ -11,6 +11,10 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
+One of my favorite times of the week is Saturday evenings, when I share a bottle of wine with my girlfriend and we spend time talking or watching a show or movie. Unfortunately, my palate is not attuned to the subtleties of wine, especially not the $4 bottle we invariably drink, while she grew up smelling and tasting different wine varieties To that end, I'm not able to pick out if I'm tasting a red fruit or a stone fruit, while she is picking out the notes of raspberries or blackberries. I've stopped trying to identify those flavors. However, after finding a dataset of 150,000 wine reviews from Wine Spectator, there is new hope for me and my data-driven approach. 
+
+As frugal college students, we're shelling out single-digits of cash per bottle, so the high-end varietals are essentially out of reach. However, 
+
 
 ```{r}
 library(readr)
